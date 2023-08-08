@@ -1,7 +1,6 @@
 package me.hostadam.timers;
 
 import lombok.Getter;
-import lombok.RequiredArgsConstructor;
 import org.bukkit.Bukkit;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.scheduler.BukkitTask;
@@ -12,12 +11,11 @@ import java.util.Optional;
 import java.util.function.Consumer;
 
 @Getter
-@RequiredArgsConstructor
 public class Timer<T> {
 
     public static List<Timer<?>> TIMERS = new ArrayList<>();
 
-    private T value;
+    protected T key;
     private String name;
     private long duration;
 
@@ -27,10 +25,10 @@ public class Timer<T> {
     private long startTime = 0;
     private Consumer<Timer<T>> onStartConsumer, tickConsumer, onEndConsumer;
 
-    public Timer(String name, long duration, T value) {
+    public Timer(String name, long duration, T key) {
         this.name = name;
         this.duration = duration;
-        this.value = value;
+        this.key = key;
     }
 
     public long getRemainingTime() {
@@ -80,6 +78,9 @@ public class Timer<T> {
     }
 
     private void runTask(JavaPlugin plugin)  {
+        TIMERS.add(this);
+        this.startTime = System.currentTimeMillis();
+
         if(this.tickInterval == -1 || this.tickConsumer == null) {
             this.task = Bukkit.getScheduler().runTaskLater(plugin, () -> {
                 if(this.onEndConsumer != null) this.onEndConsumer.accept(this);
